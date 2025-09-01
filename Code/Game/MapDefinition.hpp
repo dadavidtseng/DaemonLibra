@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Engine/Core/XmlUtils.hpp"
+#include "Engine/Math/IntVec2.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
 //----------------------------------------------------------------------------------------------------

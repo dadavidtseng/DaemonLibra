@@ -6,6 +6,7 @@
 #include "Game/TileDefinition.hpp"
 
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Math/IntVec2.hpp"
 
 //----------------------------------------------------------------------------------------------------
 class SpriteSheet;

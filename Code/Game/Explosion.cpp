@@ -6,7 +6,7 @@
 #include "Game/Explosion.hpp"
 
 #include "Engine/Core/EngineCommon.hpp"
-#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Renderer/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteAnimDefinition.hpp"
 #include "Game/Game.hpp"

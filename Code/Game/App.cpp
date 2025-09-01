@@ -16,7 +16,7 @@
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
-#include "Engine/Renderer/Window.hpp"
+#include "Engine/Platform/Window.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 
@@ -38,17 +38,17 @@ void App::Startup()
     LoadGameConfig("Data/GameConfig.xml");
 
     // Create All Engine Subsystems
-    EventSystemConfig eventSystemConfig;
-    g_theEventSystem = new EventSystem(eventSystemConfig);
-    g_theEventSystem->SubscribeEventCallbackFunction("OnCloseButtonClicked", OnCloseButtonClicked);
-    g_theEventSystem->SubscribeEventCallbackFunction("quit", OnCloseButtonClicked);
+    sEventSystemConfig eventSystemConfig;
+    g_eventSystem = new EventSystem(eventSystemConfig);
+    g_eventSystem->SubscribeEventCallbackFunction("OnCloseButtonClicked", OnCloseButtonClicked);
+    g_eventSystem->SubscribeEventCallbackFunction("quit", OnCloseButtonClicked);
 
-    InputSystemConfig inputConfig;
-    g_theInput = new InputSystem(inputConfig);
+    sInputSystemConfig inputConfig;
+    g_input = new InputSystem(inputConfig);
 
-    WindowConfig windowConfig;
+    sWindowConfig windowConfig;
     windowConfig.m_aspectRatio = 2.f;
-    windowConfig.m_inputSystem = g_theInput;
+    windowConfig.m_inputSystem = g_input;
 
     windowConfig.m_consoleTitle[0]  = " .---------------.   .----------------.   .----------------.   .----------------.   .----------------.\n";
     windowConfig.m_consoleTitle[1]  = "| .-------------. | | .--------------. | | .--------------. | | .--------------. | | .--------------. |\n";
@@ -65,37 +65,41 @@ void App::Startup()
     windowConfig.m_windowTitle = "SD1-A8: Epilogue";
     g_theWindow                = new Window(windowConfig);
 
-    RenderConfig renderConfig;
+    sRendererConfig renderConfig;
     renderConfig.m_window = g_theWindow;
     g_theRenderer         = new Renderer(renderConfig); // Create render
 
     // Initialize devConsoleCamera
     m_devConsoleCamera = new Camera();
 
-    Vec2 const bottomLeft     = Vec2::ZERO;
-    Vec2 const screenTopRight = Vec2(1600.f, 800.f);
+    Vec2 const  bottomLeft     = Vec2::ZERO;
+    float const screenSizeX    = g_gameConfigBlackboard.GetValue("screenSizeX", -1.f);
+    float const screenSizeY    = g_gameConfigBlackboard.GetValue("screenSizeY", -1.f);
+    Vec2 const  screenTopRight = Vec2(screenSizeX, screenSizeY);
 
     m_devConsoleCamera->SetOrthoGraphicView(bottomLeft, screenTopRight);
 
-    DevConsoleConfig devConsoleConfig;
+    sDevConsoleConfig devConsoleConfig;
     devConsoleConfig.m_defaultRenderer = g_theRenderer;
     devConsoleConfig.m_defaultFontName = "SquirrelFixedFont";
     devConsoleConfig.m_defaultCamera   = m_devConsoleCamera;
-    g_theDevConsole                    = new DevConsole(devConsoleConfig);
+    g_devConsole                    = new DevConsole(devConsoleConfig);
 
-    AudioSystemConfig audioConfig;
+    sAudioSystemConfig audioConfig;
     g_theAudio = new AudioSystem(audioConfig);
 
-    g_theEventSystem->Startup();
-    g_theInput->Startup();
+    g_eventSystem->Startup();
+    g_input->Startup();
     g_theWindow->Startup();
     g_theRenderer->Startup();
-    g_theDevConsole->StartUp();
+    g_devConsole->StartUp();
     g_theAudio->Startup();
 
     g_theBitmapFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
     g_theRNG        = new RandomNumberGenerator();
     g_theGame       = new Game();
+
+    m_devConsoleCamera->SetNormalizedViewport(AABB2::ZERO_TO_ONE);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -113,18 +117,18 @@ void App::Shutdown()
     g_theBitmapFont = nullptr;
 
     g_theAudio->Shutdown();
-    g_theDevConsole->Shutdown();
+    g_devConsole->Shutdown();
     g_theRenderer->Shutdown();
     g_theWindow->Shutdown();
-    g_theInput->Shutdown();
-    g_theEventSystem->Shutdown();
+    g_input->Shutdown();
+    g_eventSystem->Shutdown();
 
     // Destroy all Engine Subsystem
     delete g_theAudio;
     g_theAudio = nullptr;
 
-    delete g_theDevConsole;
-    g_theDevConsole = nullptr;
+    delete g_devConsole;
+    g_devConsole = nullptr;
 
     delete g_theRenderer;
     g_theRenderer = nullptr;
@@ -132,11 +136,11 @@ void App::Shutdown()
     delete g_theWindow;
     g_theWindow = nullptr;
 
-    delete g_theInput;
-    g_theInput = nullptr;
+    delete g_input;
+    g_input = nullptr;
 
-    delete g_theEventSystem;
-    g_theEventSystem = nullptr;
+    delete g_eventSystem;
+    g_eventSystem = nullptr;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -186,15 +190,14 @@ STATIC void App::RequestQuit()
 //-----------------------------------------------------------------------------------------------
 void App::BeginFrame() const
 {
-    g_theEventSystem->BeginFrame();
-    g_theInput->BeginFrame();
+    g_eventSystem->BeginFrame();
+    g_input->BeginFrame();
     g_theWindow->BeginFrame();
     g_theRenderer->BeginFrame();
-    g_theDevConsole->BeginFrame();
+    g_devConsole->BeginFrame();
     g_theAudio->BeginFrame();
     // g_theNetwork->BeginFrame();
     // g_theWindow->BeginFrame();
-    // g_theNetwork->BeginFrame();
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -221,31 +224,29 @@ void App::Render() const
     g_theRenderer->ClearScreen(Rgba8::BLACK);
     g_theGame->Render();
 
-    AABB2 const box = AABB2(Vec2::ZERO, Vec2(1600.f, 30.f));
-
-    g_theDevConsole->Render(box);
+    g_devConsole->Render(AABB2(Vec2::ZERO, Vec2(1600.f, 30.f)));
 }
 
 //-----------------------------------------------------------------------------------------------
 void App::EndFrame() const
 {
-    g_theEventSystem->EndFrame();
-    g_theInput->EndFrame();
+    g_eventSystem->EndFrame();
+    g_input->EndFrame();
     g_theWindow->EndFrame();
     g_theRenderer->EndFrame();
-    g_theDevConsole->EndFrame();
+    g_devConsole->EndFrame();
     g_theAudio->EndFrame();
 }
 
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromKeyBoard()
 {
-    if (g_theInput->WasKeyJustPressed(KEYCODE_ESC))
+    if (g_input->WasKeyJustPressed(KEYCODE_ESC))
     {
         if (g_theGame->IsAttractMode()) RequestQuit();
     }
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_F8))
+    if (g_input->WasKeyJustPressed(KEYCODE_F8))
     {
         if (!g_theGame->IsAttractMode())
         {
@@ -257,7 +258,7 @@ void App::UpdateFromKeyBoard()
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromController()
 {
-    XboxController const& controller = g_theInput->GetController(0);
+    XboxController const& controller = g_input->GetController(0);
 
     if (controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
     {

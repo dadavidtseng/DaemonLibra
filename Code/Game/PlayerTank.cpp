@@ -6,7 +6,7 @@
 #include "Game/PlayerTank.hpp"
 
 #include "Engine/Core/EngineCommon.hpp"
-#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Renderer/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
@@ -44,7 +44,7 @@ PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const fact
     m_totalHealth   = m_health;
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_BODY_IMG);
     m_turretTexture = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_TURRET_IMG);
-    g_theEventSystem->SubscribeEventCallbackFunction("SHOOT", SHOOT);
+    g_eventSystem->SubscribeEventCallbackFunction("SHOOT", SHOOT);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -68,9 +68,9 @@ void PlayerTank::Update(const float deltaSeconds)
         m_shootCoolDown -= deltaSeconds;
     }
 
-    XboxController const& controller = g_theInput->GetController(0);
+    XboxController const& controller = g_input->GetController(0);
 
-    if (g_theInput->IsKeyDown(KEYCODE_SPACE) || controller.IsButtonDown(XBOX_BUTTON_A))
+    if (g_input->IsKeyDown(KEYCODE_SPACE) || controller.IsButtonDown(XBOX_BUTTON_A))
     {
         if (m_shootCoolDown <= 0.0f)
         {
@@ -93,7 +93,7 @@ void PlayerTank::Update(const float deltaSeconds)
 
     m_bodyScale = GetClamped(m_bodyScale, 0.0f, 1.0f);
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_F2))
+    if (g_input->WasKeyJustPressed(KEYCODE_F2))
     {
         m_isExiting = true;
     }
@@ -181,13 +181,13 @@ void PlayerTank::DebugRender() const
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::UpdateBody(const float deltaSeconds)
 {
-    XboxController const& controller = g_theInput->GetController(0);
+    XboxController const& controller = g_input->GetController(0);
     m_bodyInput                      = controller.GetLeftStick().GetPosition();
 
-    if (g_theInput->IsKeyDown('W')) m_bodyInput += Vec2(0.f, 1.f);
-    if (g_theInput->IsKeyDown('S')) m_bodyInput += Vec2(0.f, -1.f);
-    if (g_theInput->IsKeyDown('A')) m_bodyInput += Vec2(-1.f, 0.f);
-    if (g_theInput->IsKeyDown('D')) m_bodyInput += Vec2(1.f, 0.f);
+    if (g_input->IsKeyDown('W')) m_bodyInput += Vec2(0.f, 1.f);
+    if (g_input->IsKeyDown('S')) m_bodyInput += Vec2(0.f, -1.f);
+    if (g_input->IsKeyDown('A')) m_bodyInput += Vec2(-1.f, 0.f);
+    if (g_input->IsKeyDown('D')) m_bodyInput += Vec2(1.f, 0.f);
 
     if (m_bodyInput.GetLengthSquared() <= 0.0f)
         return;
@@ -207,13 +207,13 @@ void PlayerTank::UpdateBody(const float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::UpdateTurret(const float deltaSeconds)
 {
-    XboxController const& controller  = g_theInput->GetController(0);
+    XboxController const& controller  = g_input->GetController(0);
     Vec2                  turretInput = controller.GetRightStick().GetPosition();
 
-    if (g_theInput->IsKeyDown('I')) turretInput += Vec2(0.0f, 1.0f);
-    if (g_theInput->IsKeyDown('K')) turretInput += Vec2(0.0f, -1.0f);
-    if (g_theInput->IsKeyDown('J')) turretInput += Vec2(-1.0f, 0.0f);
-    if (g_theInput->IsKeyDown('L')) turretInput += Vec2(1.0f, 0.0f);
+    if (g_input->IsKeyDown('I')) turretInput += Vec2(0.0f, 1.0f);
+    if (g_input->IsKeyDown('K')) turretInput += Vec2(0.0f, -1.0f);
+    if (g_input->IsKeyDown('J')) turretInput += Vec2(-1.0f, 0.0f);
+    if (g_input->IsKeyDown('L')) turretInput += Vec2(1.0f, 0.0f);
 
     if (turretInput.GetLengthSquared() <= 0.0f)
         return;

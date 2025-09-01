@@ -17,6 +17,7 @@
 #include "Engine/Renderer/SpriteAnimDefinition.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
+#include "Engine/Platform/Window.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 #include "Game/PlayerTank.hpp"
@@ -49,6 +50,8 @@ Game::Game()
 
     m_worldCamera->SetOrthoGraphicView(bottomLeft, Vec2(worldSizeX, worldSizeY));
     m_screenCamera->SetOrthoGraphicView(bottomLeft, Vec2(screenSizeX, screenSizeY));
+    m_worldCamera->SetNormalizedViewport(AABB2::ZERO_TO_ONE);
+    m_screenCamera->SetNormalizedViewport(AABB2::ZERO_TO_ONE);
 
     m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
 }
@@ -100,8 +103,7 @@ void Game::Update(float deltaSeconds)
         m_gameOverCountDown = 3.f;
         g_theAudio->StopSound(m_InGamePlayback);
 
-        if (m_gameLosePlayback == 0)
-            m_gameLosePlayback = g_theAudio->StartSound(m_gameLoseBgm);
+        if (m_gameLosePlayback == 0) m_gameLosePlayback = g_theAudio->StartSound(m_gameLoseBgm);
     }
 
     if (m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).x == m_currentMap->GetMapExitPosition().x &&
@@ -113,8 +115,7 @@ void Game::Update(float deltaSeconds)
             m_isGameWinMode = true;
             g_theAudio->StopSound(m_InGamePlayback);
 
-            if (m_gameWinPlayback == 0)
-                m_gameWinPlayback = g_theAudio->StartSound(m_gameWinBgm);
+            if (m_gameWinPlayback == 0) m_gameWinPlayback = g_theAudio->StartSound(m_gameWinBgm);
 
             return;
         }
@@ -136,18 +137,17 @@ void Game::Update(float deltaSeconds)
     }
 
 
-    if (m_currentMap)
-        m_currentMap->Update(deltaSeconds);
+    if (m_currentMap) m_currentMap->Update(deltaSeconds);
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_TILDE))
+    if (g_input->WasKeyJustPressed(KEYCODE_TILDE))
     {
-        g_theDevConsole->ToggleMode(OPEN_FULL);
+        g_devConsole->ToggleMode(OPEN_FULL);
     }
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_ENTER))
+    if (g_input->WasKeyJustPressed(KEYCODE_ENTER))
     {
-        g_theDevConsole->AddLine(Rgba8::WHITE, "SHOOT");
-        g_theDevConsole->Execute("SHOOT");
+        g_devConsole->AddLine(Rgba8::WHITE, "SHOOT");
+        g_devConsole->Execute("SHOOT");
         // EventArgs args;
         // args.SetValue("SHOOT", "SHOOT");
         // g_theEventSystem->FireEvent("SHOOT", args);
@@ -213,21 +213,21 @@ void Game::InitializeAudio()
 {
     printf("( Game ) Start  | InitializeAudio\n");
 
-    m_attractModeBgm       = g_theAudio->CreateOrGetSound(g_gameConfigBlackboard.GetValue("attractModeBgm", "Data/Audios/AttractModeBgm.mp3"));
-    m_InGameBgm            = g_theAudio->CreateOrGetSound(IN_GAME_BGM);
-    m_gameWinBgm           = g_theAudio->CreateOrGetSound(GAME_WIN_BGM);
-    m_gameLoseBgm          = g_theAudio->CreateOrGetSound(GAME_LOSE_BGM);
-    m_clickSound           = g_theAudio->CreateOrGetSound(CLICK_SOUND);
-    m_pauseSound           = g_theAudio->CreateOrGetSound(PAUSE_SOUND);
-    m_resumeSound          = g_theAudio->CreateOrGetSound(RESUME_SOUND);
-    m_playerTankShootSound = g_theAudio->CreateOrGetSound(PLAYER_TANK_SHOOT_SOUND);
-    m_playerTankHitSound   = g_theAudio->CreateOrGetSound(PLAYER_TANK_HIT_SOUND);
-    m_enemyDiedSound       = g_theAudio->CreateOrGetSound(ENEMY_DIED_SOUND);
-    m_enemyHitSound        = g_theAudio->CreateOrGetSound(ENEMY_HIT_SOUND);
-    m_enemyShootSound      = g_theAudio->CreateOrGetSound(ENEMY_SHOOT_SOUND);
-    m_exitMapSound         = g_theAudio->CreateOrGetSound(EXIT_MAP_SOUND);
-    m_bulletBounceSound    = g_theAudio->CreateOrGetSound(BULLET_BOUNCE_SOUND);
-    m_enemyDiscoverSound   = g_theAudio->CreateOrGetSound(ENEMY_DISCOVER_SOUND);
+    m_attractModeBgm       = g_theAudio->CreateOrGetSound(g_gameConfigBlackboard.GetValue("attractModeBgm", "Data/Audios/AttractModeBgm.mp3"), eAudioSystemSoundDimension::Sound2D);
+    m_InGameBgm            = g_theAudio->CreateOrGetSound(IN_GAME_BGM, eAudioSystemSoundDimension::Sound2D);
+    m_gameWinBgm           = g_theAudio->CreateOrGetSound(GAME_WIN_BGM, eAudioSystemSoundDimension::Sound2D);
+    m_gameLoseBgm          = g_theAudio->CreateOrGetSound(GAME_LOSE_BGM, eAudioSystemSoundDimension::Sound2D);
+    m_clickSound           = g_theAudio->CreateOrGetSound(CLICK_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_pauseSound           = g_theAudio->CreateOrGetSound(PAUSE_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_resumeSound          = g_theAudio->CreateOrGetSound(RESUME_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_playerTankShootSound = g_theAudio->CreateOrGetSound(PLAYER_TANK_SHOOT_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_playerTankHitSound   = g_theAudio->CreateOrGetSound(PLAYER_TANK_HIT_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_enemyDiedSound       = g_theAudio->CreateOrGetSound(ENEMY_DIED_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_enemyHitSound        = g_theAudio->CreateOrGetSound(ENEMY_HIT_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_enemyShootSound      = g_theAudio->CreateOrGetSound(ENEMY_SHOOT_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_exitMapSound         = g_theAudio->CreateOrGetSound(EXIT_MAP_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_bulletBounceSound    = g_theAudio->CreateOrGetSound(BULLET_BOUNCE_SOUND, eAudioSystemSoundDimension::Sound2D);
+    m_enemyDiscoverSound   = g_theAudio->CreateOrGetSound(ENEMY_DISCOVER_SOUND, eAudioSystemSoundDimension::Sound2D);
 
     printf("( Game ) Finish | InitializeAudio\n");
 }
@@ -235,13 +235,13 @@ void Game::InitializeAudio()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateMarkForDelete()
 {
-    XboxController const& controller = g_theInput->GetController(0);
+    XboxController const& controller = g_input->GetController(0);
 
     if (m_isPaused &&
         !m_isMarkedForDelete &&
         !m_isAttractMode)
     {
-        if (g_theInput->WasKeyJustPressed(KEYCODE_ESC) ||
+        if (g_input->WasKeyJustPressed(KEYCODE_ESC) ||
             controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
         {
             m_isMarkedForDelete = true;
@@ -258,7 +258,7 @@ void Game::UpdateFromKeyBoard()
     // AttractMode
     if (m_isAttractMode)
     {
-        if (g_theInput->WasKeyJustPressed(KEYCODE_P))
+        if (g_input->WasKeyJustPressed(KEYCODE_P))
         {
             m_isAttractMode = false;
             m_isPaused      = false;
@@ -275,7 +275,7 @@ void Game::UpdateFromKeyBoard()
         // GameWinMode
         if (m_isGameWinMode)
         {
-            if (g_theInput->WasKeyJustPressed(KEYCODE_ESC))
+            if (g_input->WasKeyJustPressed(KEYCODE_ESC))
             {
                 m_isGameWinMode     = false;
                 m_isMarkedForDelete = true;
@@ -288,7 +288,7 @@ void Game::UpdateFromKeyBoard()
         // GameLoseMode
         if (m_isGameLoseMode)
         {
-            if (g_theInput->WasKeyJustPressed(KEYCODE_ESC))
+            if (g_input->WasKeyJustPressed(KEYCODE_ESC))
             {
                 m_isGameLoseMode    = false;
                 m_isMarkedForDelete = true;
@@ -297,7 +297,7 @@ void Game::UpdateFromKeyBoard()
                 g_theAudio->StartSound(m_clickSound);
             }
 
-            if (g_theInput->WasKeyJustPressed(KEYCODE_N))
+            if (g_input->WasKeyJustPressed(KEYCODE_N))
             {
                 m_playerTank->m_health = g_gameConfigBlackboard.GetValue("playerTankInitHealth", 100);
                 m_playerTank->m_isDead = false;
@@ -306,22 +306,22 @@ void Game::UpdateFromKeyBoard()
             }
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_F1))
+        if (g_input->WasKeyJustPressed(KEYCODE_F1))
         {
             m_isDebugRendering = !m_isDebugRendering;
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_F3))
+        if (g_input->WasKeyJustPressed(KEYCODE_F3))
         {
             m_isNoClip = !m_isNoClip;
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_F4))
+        if (g_input->WasKeyJustPressed(KEYCODE_F4))
         {
             m_isDebugCamera = !m_isDebugCamera;
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_F9))
+        if (g_input->WasKeyJustPressed(KEYCODE_F9))
         {
             if (m_currentMap->GetMapIndex() == 2)
             {
@@ -337,7 +337,7 @@ void Game::UpdateFromKeyBoard()
             m_isUpdateMapCountingDown = true;
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_P))
+        if (g_input->WasKeyJustPressed(KEYCODE_P))
         {
             if (!m_isPaused && !m_isGameWinMode && !m_isGameLoseMode)
             {
@@ -353,7 +353,7 @@ void Game::UpdateFromKeyBoard()
             }
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_O))
+        if (g_input->WasKeyJustPressed(KEYCODE_O))
         {
             if (!m_isPaused)
             {
@@ -368,14 +368,12 @@ void Game::UpdateFromKeyBoard()
             }
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_ESC))
+        if (g_input->WasKeyJustPressed(KEYCODE_ESC))
         {
             if (!m_isPaused && !m_isMarkedForDelete)
             {
-                if (m_isGameWinMode)
-                    return;
-                if (m_isGameLoseMode)
-                    return;
+                if (m_isGameWinMode) return;
+                if (m_isGameLoseMode) return;
 
                 m_isPaused = true;
                 g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
@@ -383,25 +381,25 @@ void Game::UpdateFromKeyBoard()
             }
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_T))
+        if (g_input->WasKeyJustPressed(KEYCODE_T))
         {
             m_isSlowMo = true;
             g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.1f);
         }
 
-        if (g_theInput->WasKeyJustReleased(KEYCODE_T))
+        if (g_input->WasKeyJustReleased(KEYCODE_T))
         {
             m_isSlowMo = false;
             g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 1.f);
         }
 
-        if (g_theInput->WasKeyJustPressed(KEYCODE_Y))
+        if (g_input->WasKeyJustPressed(KEYCODE_Y))
         {
             m_isFastMo = true;
             g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 4.0f);
         }
 
-        if (g_theInput->WasKeyJustReleased(KEYCODE_Y))
+        if (g_input->WasKeyJustReleased(KEYCODE_Y))
         {
             m_isFastMo = false;
             g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 1.f);
@@ -412,7 +410,7 @@ void Game::UpdateFromKeyBoard()
 //----------------------------------------------------------------------------------------------------
 void Game::UpdateFromController()
 {
-    XboxController const& controller = g_theInput->GetController(0);
+    XboxController const& controller = g_input->GetController(0);
 
     // AttractMode
     if (m_isAttractMode)
@@ -530,10 +528,8 @@ void Game::UpdateFromController()
         {
             if (!m_isPaused && !m_isMarkedForDelete)
             {
-                if (m_isGameWinMode)
-                    return;
-                if (m_isGameLoseMode)
-                    return;
+                if (m_isGameWinMode) return;
+                if (m_isGameLoseMode) return;
 
                 m_isPaused = true;
                 g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
@@ -594,8 +590,7 @@ void Game::UpdateCamera(float const deltaSeconds) const
     float const worldCenterX = g_gameConfigBlackboard.GetValue("worldCenterX", 8.f);
     float const worldCenterY = g_gameConfigBlackboard.GetValue("worldCenterY", 4.f);
 
-    if (!m_playerTank)
-        return;
+    if (!m_playerTank) return;
 
     const Vec2      playerTankPosition = m_playerTank->m_position;
     constexpr float mapMinX            = 0.f;
@@ -642,8 +637,7 @@ void Game::UpdateCamera(float const deltaSeconds) const
 //----------------------------------------------------------------------------------------------------
 void Game::UpdateAttractMode(float const deltaSeconds)
 {
-    if (!m_isAttractMode)
-        return;
+    if (!m_isAttractMode) return;
 
     if (m_glowIncreasing)
     {
@@ -670,24 +664,19 @@ void Game::UpdateAttractMode(float const deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Game::AdjustForPauseAndTimeDistortion(float& deltaSeconds) const
 {
-    if (m_isAttractMode)
-        return;
+    if (m_isAttractMode) return;
 
-    if (m_isPaused)
-        deltaSeconds = 0.f;
+    if (m_isPaused) deltaSeconds = 0.f;
 
-    if (m_isSlowMo)
-        deltaSeconds *= 1 / 10.f;
+    if (m_isSlowMo) deltaSeconds *= 1 / 10.f;
 
-    if (m_isFastMo)
-        deltaSeconds *= 4.f;
+    if (m_isFastMo) deltaSeconds *= 4.f;
 }
 
 //----------------------------------------------------------------------------------------------------
 void Game::RenderAttractMode() const
 {
-    if (!m_isAttractMode)
-        return;
+    if (!m_isAttractMode) return;
 
     DebugDrawGlowCircle(Vec2(800, 400),
                         400.0f,
@@ -703,8 +692,7 @@ void Game::RenderUI() const
     float const screenCenterX = g_gameConfigBlackboard.GetValue("screenCenterX", 800.f);
     float const screenCenterY = g_gameConfigBlackboard.GetValue("screenCenterY", 400.f);
 
-    if (m_isAttractMode)
-        return;
+    if (m_isAttractMode) return;
 
     if (m_isPaused)
     {

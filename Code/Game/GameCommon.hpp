@@ -22,7 +22,6 @@ extern App*                   g_theApp;
 extern AudioSystem*           g_theAudio;
 extern BitmapFont*            g_theBitmapFont;
 extern Game*                  g_theGame;
-extern InputSystem*           g_theInput;
 extern Renderer*              g_theRenderer;
 extern RandomNumberGenerator* g_theRNG;
 extern Window*                g_theWindow;

@@ -5,7 +5,7 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Aries.hpp"
 
-#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Renderer/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"

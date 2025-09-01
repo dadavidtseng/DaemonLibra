@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/RaycastUtils.hpp"
 #include "Game/Entity.hpp"
 #include "Game/MapDefinition.hpp"

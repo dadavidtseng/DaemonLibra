@@ -14,7 +14,7 @@
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Core/StringUtils.hpp"
-#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Renderer/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
@@ -73,7 +73,7 @@ void Map::Update(float const deltaSeconds)
 {
     if (g_theGame->IsAttractMode()) return;
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_F6))
+    if (g_input->WasKeyJustPressed(KEYCODE_F6))
     {
         // Increment the index
         m_currentTileHeatMapIndex++;

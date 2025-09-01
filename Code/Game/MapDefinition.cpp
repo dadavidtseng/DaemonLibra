@@ -6,6 +6,7 @@
 #include "Game/MapDefinition.hpp"
 
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Math/IntVec2.hpp"
 
 //----------------------------------------------------------------------------------------------------
 std::vector<MapDefinition*> MapDefinition::s_mapDefinitions;
