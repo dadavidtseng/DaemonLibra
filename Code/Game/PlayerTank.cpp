@@ -11,6 +11,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -22,7 +23,7 @@ STATIC bool PlayerTank::SHOOT(EventArgs& args)
 
 
 
-    g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
+    g_audio->StartSound(g_game->GetPlayerTankShootSoundID());
     return false;
 }
 
@@ -42,8 +43,8 @@ PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const fact
     m_turretBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
 
     m_totalHealth   = m_health;
-    m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_BODY_IMG);
-    m_turretTexture = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_TURRET_IMG);
+    m_bodyTexture   = g_resourceSubsystem->CreateOrGetTextureFromFile(PLAYER_TANK_BODY_IMG);
+    m_turretTexture = g_resourceSubsystem->CreateOrGetTextureFromFile(PLAYER_TANK_TURRET_IMG);
     g_eventSystem->SubscribeEventCallbackFunction("SHOOT", SHOOT);
 }
 
@@ -85,7 +86,7 @@ void PlayerTank::Update(const float deltaSeconds)
             m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
 
 
-            g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
+            g_audio->StartSound(g_game->GetPlayerTankShootSoundID());
         }
     }
 
@@ -235,8 +236,8 @@ void PlayerTank::RenderBody() const
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              m_bodyScale, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_bodyTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+    g_renderer->BindTexture(m_bodyTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -248,6 +249,6 @@ void PlayerTank::RenderTurret() const
     TransformVertexArrayXY3D(static_cast<int>(turretVerts.size()), turretVerts.data(),
                              1.0f, m_orientationDegrees + m_turretRelativeOrientation, m_position);
 
-    g_theRenderer->BindTexture(m_turretTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(turretVerts.size()), turretVerts.data());
+    g_renderer->BindTexture(m_turretTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(turretVerts.size()), turretVerts.data());
 }

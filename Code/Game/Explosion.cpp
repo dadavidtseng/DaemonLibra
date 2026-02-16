@@ -9,6 +9,7 @@
 #include "Engine/Renderer/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteAnimDefinition.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -22,7 +23,7 @@ Explosion::Explosion(Map* map, EntityType const type, EntityFaction const factio
     m_doesPushEntities   = g_gameConfigBlackboard.GetValue("explosionDoesPushEntities", true);
 
     m_health                          = g_gameConfigBlackboard.GetValue("explosionInitHealth", 1);
-    Texture const* const tileTexture  = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/Explosion_5x5.png");
+    Texture const* const tileTexture  = g_resourceSubsystem->CreateOrGetTextureFromFile("Data/Images/Explosion_5x5.png");
     IntVec2 const        spriteCoords = IntVec2(5, 5);
     m_spriteSheet                     = new SpriteSheet(*tileTexture, spriteCoords);
 
@@ -73,7 +74,7 @@ void Explosion::RenderBody() const
 {
     VertexList_PCU vertexArray;
 
-    SpriteAnimDefinition const myAnim(*m_spriteSheet, 0, 24, 10.f, SpriteAnimPlaybackType::ONCE);
+    SpriteAnimDefinition const myAnim(*m_spriteSheet, 0, 24, 10.f, eSpriteAnimPlaybackType::ONCE);
 
     SpriteDefinition const& spriteDef = myAnim.GetSpriteDefAtTime(m_animationTime);
 
@@ -85,8 +86,8 @@ void Explosion::RenderBody() const
     TransformVertexArrayXY3D(static_cast<int>(vertexArray.size()), vertexArray.data(),
                              1.f, 0.f, m_position);
 
-    g_theRenderer->BindTexture(&spriteDef.GetTexture());
-    g_theRenderer->SetBlendMode(eBlendMode::ADDITIVE);
-    g_theRenderer->DrawVertexArray(static_cast<int>(vertexArray.size()), vertexArray.data());
-    g_theRenderer->SetBlendMode(eBlendMode::ALPHA);
+    g_renderer->BindTexture(&spriteDef.GetTexture());
+    g_renderer->SetBlendMode(eBlendMode::ADDITIVE);
+    g_renderer->DrawVertexArray(static_cast<int>(vertexArray.size()), vertexArray.data());
+    g_renderer->SetBlendMode(eBlendMode::ALPHA);
 }

@@ -9,22 +9,11 @@
 struct Vec2;
 struct Rgba8;
 class App;
-class AudioSystem;
-class BitmapFont;
 class Game;
-class InputSystem;
-class Renderer;
-class RandomNumberGenerator;
-class Window;
 
 // one-time declaration
-extern App*                   g_theApp;
-extern AudioSystem*           g_theAudio;
-extern BitmapFont*            g_theBitmapFont;
-extern Game*                  g_theGame;
-extern Renderer*              g_theRenderer;
-extern RandomNumberGenerator* g_theRNG;
-extern Window*                g_theWindow;
+extern App*                   g_app;
+extern Game*                  g_game;
 
 void DebugDrawRing(Vec2 const& center, float radius, float thickness, Rgba8 const& color);
 void DebugDrawLine(Vec2 const& start, Vec2 const& end, float thickness, Rgba8 const& color);
@@ -63,3 +52,14 @@ extern const char* ARIES_BODY_IMG;
 extern const char* BULLET_GOOD_IMG;
 extern const char* BULLET_EVIL_IMG;
 extern const char* TILE_TEXTURE_IMG;
+
+//----------------------------------------------------------------------------------------------------
+template <typename T>
+void GAME_SAFE_RELEASE(T*& pointer)
+{
+    if (pointer != nullptr)
+    {
+        delete pointer;
+        pointer = nullptr;
+    }
+}

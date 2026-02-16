@@ -10,6 +10,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -29,7 +30,7 @@ Capricorn::Capricorn(Map* map, EntityType const type, EntityFaction const factio
     m_doesPushEntities   = g_gameConfigBlackboard.GetValue("leoDoesPushEntities", true);
     m_canSwim            = g_gameConfigBlackboard.GetValue("leoCanSwim", false);
 
-    m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
+    m_bodyTexture = g_resourceSubsystem->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
 
 void Capricorn::DebugRenderTileIndex() const
@@ -44,9 +45,10 @@ void Capricorn::DebugRenderTileIndex() const
             float const value = m_heatMap->GetValueAtCoords(tileX, tileY);
 
             VertexList_PCU textVerts;
-            g_theBitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)),Vec2((float) tileX, (float) tileY), 0.2f,  Rgba8::BLACK);
-            g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
-            g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+            BitmapFont*    bitmapFont = g_resourceSubsystem->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont");
+            bitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)),Vec2((float) tileX, (float) tileY), 0.2f,  Rgba8::BLACK);
+            g_renderer->BindTexture(&bitmapFont->GetTexture());
+            g_renderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
     }
 }
@@ -57,12 +59,12 @@ void Capricorn::Update(float const deltaSeconds)
     if (m_isDead)
         return;
 
-    if (g_theGame->GetPlayerTank()->m_isDead)
+    if (g_game->GetPlayerTank()->m_isDead)
         return;
 
     if (m_health <= 0)
     {
-        g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
+        g_audio->StartSound(g_game->GetEnemyDiedSoundID());
         m_isGarbage = true;
         m_isDead    = true;
     }
@@ -136,7 +138,7 @@ void Capricorn::UpdateBody(float const deltaSeconds)
 
     UpdateShootCoolDown(deltaSeconds);
 
-    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_game->GetPlayerTank();
 
     if (!playerTank)
         return;
@@ -160,7 +162,7 @@ void Capricorn::UpdateBody(float const deltaSeconds)
         {
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position, m_orientationDegrees);
             m_shootCoolDown = g_gameConfigBlackboard.GetValue("leoShootCoolDown", 1.f);
-            g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
+            g_audio->StartSound(g_game->GetEnemyShootSoundID());
         }
     }
 
@@ -187,8 +189,8 @@ void Capricorn::RenderBody() const
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.0f, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_bodyTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+    g_renderer->BindTexture(m_bodyTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------

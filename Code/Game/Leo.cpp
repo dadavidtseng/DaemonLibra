@@ -10,6 +10,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -31,7 +32,7 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
 
     m_totalHealth = m_health;
 
-    m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
+    m_bodyTexture = g_resourceSubsystem->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -40,12 +41,12 @@ void Leo::Update(float const deltaSeconds)
     if (m_isDead)
         return;
 
-    if (g_theGame->GetPlayerTank()->m_isDead)
+    if (g_game->GetPlayerTank()->m_isDead)
         return;
 
     if (m_health <= 0)
     {
-        g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
+        g_audio->StartSound(g_game->GetEnemyDiedSoundID());
         m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         m_isGarbage = true;
         m_isDead    = true;
@@ -120,7 +121,7 @@ void Leo::UpdateBody(float const deltaSeconds)
 
     UpdateShootCoolDown(deltaSeconds);
 
-    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_game->GetPlayerTank();
 
     if (!playerTank)
         return;
@@ -144,7 +145,7 @@ void Leo::UpdateBody(float const deltaSeconds)
         {
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position, m_orientationDegrees);
             m_shootCoolDown = g_gameConfigBlackboard.GetValue("leoShootCoolDown", 1.f);
-            g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
+            g_audio->StartSound(g_game->GetEnemyShootSoundID());
         }
     }
 
@@ -171,18 +172,19 @@ void Leo::RenderBody() const
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.0f, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_bodyTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+    g_renderer->BindTexture(m_bodyTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 
     VertexList_PCU   stateVerts;
     String const stateStr   = m_hasTarget ? "Chase" : "Wander";
     Rgba8 const  stateColor = m_hasTarget ? Rgba8::RED : Rgba8::WHITE;
 
-    g_theBitmapFont->AddVertsForTextInBox2D(stateVerts, stateStr, m_bodyBounds, 1.f, stateColor);
+    BitmapFont*    bitmapFont = g_resourceSubsystem->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont");
+    bitmapFont->AddVertsForTextInBox2D(stateVerts, stateStr, m_bodyBounds, 1.f, stateColor);
     TransformVertexArrayXY3D(static_cast<int>(stateVerts.size()), stateVerts.data(),
                              1.0f, 0, m_position);
-    g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
-    g_theRenderer->DrawVertexArray(static_cast<int>(stateVerts.size()), stateVerts.data());
+    g_renderer->BindTexture(&bitmapFont->GetTexture());
+    g_renderer->DrawVertexArray(static_cast<int>(stateVerts.size()), stateVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------

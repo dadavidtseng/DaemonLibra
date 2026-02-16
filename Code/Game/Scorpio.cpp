@@ -8,6 +8,7 @@
 #include "Engine/Renderer/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -28,8 +29,8 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
 
     m_totalHealth = m_health;
     
-    m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);
-    m_turretTexture = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_TURRET_IMG);
+    m_bodyTexture   = g_resourceSubsystem->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);
+    m_turretTexture = g_resourceSubsystem->CreateOrGetTextureFromFile(SCORPIO_TURRET_IMG);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -38,12 +39,12 @@ void Scorpio::Update(float const deltaSeconds)
     if (m_isDead)
         return;
 
-    if (g_theGame->GetPlayerTank()->m_isDead)
+    if (g_game->GetPlayerTank()->m_isDead)
         return;
 
     if (m_health <= 0)
     {
-        g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
+        g_audio->StartSound(g_game->GetEnemyDiedSoundID());
         m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         m_isGarbage = true;
         m_isDead    = true;
@@ -97,7 +98,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
     }
 
     // Turn and shoot ( or turn idly)
-    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_game->GetPlayerTank();
     if (m_map->HasLineOfSight(m_position, playerTank->m_position, m_detectRange) && !playerTank->m_isDead)
     {
         // Turn toward player
@@ -115,7 +116,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
         {
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position + myFwdNormal * 0.45f, m_turretOrientationDegrees);
             m_shootCoolDown = g_gameConfigBlackboard.GetValue("scorpioShootCoolDown", 0.3f);
-            g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
+            g_audio->StartSound(g_game->GetEnemyShootSoundID());
             m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         }
 
@@ -137,8 +138,8 @@ void Scorpio::RenderBody() const
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.0f, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_bodyTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+    g_renderer->BindTexture(m_bodyTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -150,8 +151,8 @@ void Scorpio::RenderTurret() const
     TransformVertexArrayXY3D(static_cast<int>(turretVerts.size()), turretVerts.data(),
                              1.0f, m_orientationDegrees + m_turretOrientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_turretTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(turretVerts.size()), turretVerts.data());
+    g_renderer->BindTexture(m_turretTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(turretVerts.size()), turretVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------

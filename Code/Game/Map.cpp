@@ -22,6 +22,7 @@
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Aries.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
@@ -71,7 +72,7 @@ Map::~Map()
 //----------------------------------------------------------------------------------------------------
 void Map::Update(float const deltaSeconds)
 {
-    if (g_theGame->IsAttractMode()) return;
+    if (g_game->IsAttractMode()) return;
 
     if (g_input->WasKeyJustPressed(KEYCODE_F6))
     {
@@ -117,7 +118,7 @@ void Map::Update(float const deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Map::Render() const
 {
-    if (g_theGame->IsAttractMode()) return;
+    if (g_game->IsAttractMode()) return;
 
     RenderTiles();
     RenderTileHeatMap();
@@ -129,9 +130,9 @@ void Map::Render() const
 //----------------------------------------------------------------------------------------------------
 void Map::DebugRender() const
 {
-    if (g_theGame->IsAttractMode()) return;
+    if (g_game->IsAttractMode()) return;
 
-    if (!g_theGame->IsDebugRendering()) return;
+    if (!g_game->IsDebugRendering()) return;
 
     DebugRenderEntities();
 
@@ -270,8 +271,8 @@ void Map::RenderTiles() const
         }
     }
 
-    g_theRenderer->BindTexture(&g_theGame->GetTileSpriteSheet()->GetTexture());
-    g_theRenderer->DrawVertexArray(static_cast<int>(tileVertices.size()), tileVertices.data());
+    g_renderer->BindTexture(&g_game->GetTileSpriteSheet()->GetTexture());
+    g_renderer->DrawVertexArray(static_cast<int>(tileVertices.size()), tileVertices.data());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -308,14 +309,14 @@ void Map::RenderTileHeatMap() const
         m_tileHeatMaps[m_currentTileHeatMapIndex]->AddVertsForDebugDraw(verts, totalBounds);
     }
 
-    g_theRenderer->BindTexture(nullptr);
-    g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
+    g_renderer->BindTexture(nullptr);
+    g_renderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
 }
 
 //----------------------------------------------------------------------------------------------------
 void Map::RenderTileHeatMapText() const
 {
-    if (g_theGame->IsAttractMode()) return;
+    if (g_game->IsAttractMode()) return;
 
     if (m_currentTileHeatMapIndex == -1) return;
 
@@ -325,30 +326,32 @@ void Map::RenderTileHeatMapText() const
     VertexList_PCU boxVerts;
 
     AddVertsForAABB2D(boxVerts, box, Rgba8::BLACK);
-    g_theRenderer->BindTexture(nullptr);
-    g_theRenderer->DrawVertexArray(static_cast<int>(boxVerts.size()), boxVerts.data());
+    g_renderer->BindTexture(nullptr);
+    g_renderer->DrawVertexArray(static_cast<int>(boxVerts.size()), boxVerts.data());
+
+    BitmapFont*    bitmapFont = g_resourceSubsystem->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont");
 
     switch (m_currentTileHeatMapIndex)
     {
     case 0:
-        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map from start (F6 for next mode)", box, 1.f, Rgba8::WHITE, 1.f, Vec2(0, 1));
+        bitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map from start (F6 for next mode)", box, 1.f, Rgba8::WHITE, 1.f, Vec2(0, 1));
         break;
 
     case 1:
-        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for amphibians (F6 for next mode)", box, 0.5f);
+        bitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for amphibians (F6 for next mode)", box, 0.5f);
         break;
 
     case 2:
-        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for land-based (F6 for next mode)", box, 0.5f);
+        bitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for land-based (F6 for next mode)", box, 0.5f);
         break;
 
     case 3:
-        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map to selected Entity's goal (F6 for next mode)", box, 0.5f);
+        bitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map to selected Entity's goal (F6 for next mode)", box, 0.5f);
         break;
     }
 
-    g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
-    g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+    g_renderer->BindTexture(&bitmapFont->GetTexture());
+    g_renderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -387,9 +390,10 @@ void Map::DebugRenderTileIndex() const
             float const value = heatMap->GetValueAtCoords(tileX, tileY);
             VertexList_PCU  textVerts;
 
-            g_theBitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)), Vec2(tileX, tileY), 0.2f, Rgba8::WHITE);
-            g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
-            g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+            BitmapFont*    bitmapFont = g_resourceSubsystem->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont");
+            bitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)), Vec2(tileX, tileY), 0.2f, Rgba8::WHITE);
+            g_renderer->BindTexture(&bitmapFont->GetTexture());
+            g_renderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
     }
 }
@@ -676,8 +680,8 @@ AABB2 const Map::GetTileBounds(int const tileIndex) const
 //----------------------------------------------------------------------------------------------------
 IntVec2 Map::RollRandomTileCoords() const
 {
-    int const randomX = g_theRNG->RollRandomIntInRange(0, m_dimensions.x - 1);
-    int const randomY = g_theRNG->RollRandomIntInRange(0, m_dimensions.y - 1);
+    int const randomX = g_rng->RollRandomIntInRange(0, m_dimensions.x - 1);
+    int const randomY = g_rng->RollRandomIntInRange(0, m_dimensions.y - 1);
 
     return IntVec2(randomX, randomY);
 }
@@ -715,14 +719,14 @@ IntVec2 Map::RollRandomTraversableTileCoords(TileHeatMap const& heatMap, IntVec2
     }
 
     // 從可到達的座標中隨機選擇一個
-    int randomIndex = g_theRNG->RollRandomIntInRange(0, static_cast<int>(traversableCoords.size() - 1));
+    int randomIndex = g_rng->RollRandomIntInRange(0, static_cast<int>(traversableCoords.size() - 1));
     return traversableCoords[randomIndex];
 }
 
 //----------------------------------------------------------------------------------------------------
 IntVec2 Map::RollRandomCardinalDirection() const
 {
-    switch (g_theRNG->RollRandomIntInRange(0, 3))
+    switch (g_rng->RollRandomIntInRange(0, 3))
     {
     case 0:
         return IntVec2(0, 1);
@@ -1141,20 +1145,20 @@ void Map::SpawnNewNPCs()
 
         if (IsWorldPosOccupied(worldPosition)) continue;
 
-        switch (g_theRNG->RollRandomIntInRange(0, 3))
+        switch (g_rng->RollRandomIntInRange(0, 3))
         {
         case 0:
-            if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetScorpioSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
+            if (g_rng->RollRandomFloatZeroToOne() < m_mapDef->GetScorpioSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
             break;
 
         case 1:
-            if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetLeoSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
+            if (g_rng->RollRandomFloatZeroToOne() < m_mapDef->GetLeoSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
             break;
 
         case 2:
-            if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetAriesSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, worldPosition, 0.f);
+            if (g_rng->RollRandomFloatZeroToOne() < m_mapDef->GetAriesSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
             break;
         }
@@ -1185,7 +1189,7 @@ void Map::PushEntitiesOutOfWalls() const
     {
         if (IsBullet(m_allEntities[entityIndex])) continue;
 
-        if (g_theGame->IsNoClip() && m_allEntities[entityIndex]->m_type == ENTITY_TYPE_PLAYER_TANK) continue;
+        if (g_game->IsNoClip() && m_allEntities[entityIndex]->m_type == ENTITY_TYPE_PLAYER_TANK) continue;
 
         PushEntityOutOfSolidTiles(m_allEntities[entityIndex]);
     }
@@ -1290,7 +1294,7 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
 
                         entityA->m_orientationDegrees = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
                         entityA->m_health--;
-                        g_theAudio->StartSound(g_theGame->GetEnemyHitSoundID());
+                        g_audio->StartSound(g_game->GetEnemyHitSoundID());
                         return;
                     }
                 }
@@ -1300,11 +1304,11 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
 
                 if (entityB->m_type == ENTITY_TYPE_PLAYER_TANK)
                 {
-                    g_theAudio->StartSound(g_theGame->GetPlayerTankHitSoundID());
+                    g_audio->StartSound(g_game->GetPlayerTankHitSoundID());
                 }
                 else
                 {
-                    g_theAudio->StartSound(g_theGame->GetEnemyHitSoundID());
+                    g_audio->StartSound(g_game->GetEnemyHitSoundID());
                 }
             }
         }

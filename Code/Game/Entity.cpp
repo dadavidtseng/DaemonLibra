@@ -74,7 +74,7 @@ void Entity::WanderAround(float const deltaSeconds,
 
     if (m_timeSinceLastRoll >= 1.0f)
     {
-        m_targetOrientationDegrees = static_cast<float>(g_theRNG->RollRandomIntInRange(0, 360));
+        m_targetOrientationDegrees = static_cast<float>(g_rng->RollRandomIntInRange(0, 360));
         m_timeSinceLastRoll        = 0.f;
     }
 
@@ -90,7 +90,7 @@ void Entity::WanderAround(float const deltaSeconds,
 //----------------------------------------------------------------------------------------------------
 void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 {
-    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_game->GetPlayerTank();
 
     // Update or initialize the heat map and target position
     if (!m_heatMap ||
@@ -107,7 +107,7 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
             // Play discover sound if not already played
             if (!m_hasPlayedDiscoverSound)
             {
-                g_theAudio->StartSound(g_theGame->GetEnemyDiscoverSoundID());
+                g_audio->StartSound(g_game->GetEnemyDiscoverSoundID());
                 m_hasPlayedDiscoverSound = true;
             }
         }
@@ -185,7 +185,7 @@ void Entity::RenderHealthBar() const
     TransformVertexArrayXY3D(static_cast<int>(healthBarVerts.size()), healthBarVerts.data(),
                              1.0f, 0.f, m_position);
 
-    g_theRenderer->BindTexture(nullptr);
-    g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
-    g_theRenderer->DrawVertexArray(static_cast<int>(healthBarVerts.size()), healthBarVerts.data());
+    g_renderer->BindTexture(nullptr);
+    g_renderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
+    g_renderer->DrawVertexArray(static_cast<int>(healthBarVerts.size()), healthBarVerts.data());
 }

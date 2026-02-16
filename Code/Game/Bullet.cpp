@@ -10,6 +10,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -24,13 +25,13 @@ Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
 
     if (faction == ENTITY_FACTION_GOOD)
     {
-        m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_GOOD_IMG);
+        m_BodyTexture = g_resourceSubsystem->CreateOrGetTextureFromFile(BULLET_GOOD_IMG);
         m_health      = g_gameConfigBlackboard.GetValue("bulletGoodInitHealth", 3);
         m_moveSpeed   = g_gameConfigBlackboard.GetValue("bulletGoodMoveSpeed", 5.f);
     }
     if (faction == ENTITY_FACTION_EVIL)
     {
-        m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_EVIL_IMG);
+        m_BodyTexture = g_resourceSubsystem->CreateOrGetTextureFromFile(BULLET_EVIL_IMG);
         m_health      = g_gameConfigBlackboard.GetValue("bulletEvilInitHealth", 1);
         m_moveSpeed   = g_gameConfigBlackboard.GetValue("bulletEvilMoveSpeed", 3.f);
     }
@@ -49,12 +50,12 @@ void Bullet::Update(float const deltaSeconds)
 
     if (m_health <= 0)
     {
-        int const random = g_theRNG->RollRandomIntInRange(0, 5);
+        int const random = g_rng->RollRandomIntInRange(0, 5);
 
         for (int i = 0; i < random; ++i)
         {
-            float randomX = g_theRNG->RollRandomFloatInRange(-0.5f, 0.5f);
-            float randomY = g_theRNG->RollRandomFloatInRange(-0.5f, 0.5f);
+            float randomX = g_rng->RollRandomFloatInRange(-0.5f, 0.5f);
+            float randomY = g_rng->RollRandomFloatInRange(-0.5f, 0.5f);
             m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position + Vec2(randomX, randomY), m_orientationDegrees);
         }
 
@@ -122,6 +123,6 @@ void Bullet::RenderBody() const
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.f, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_BodyTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+    g_renderer->BindTexture(m_BodyTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }

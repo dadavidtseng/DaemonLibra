@@ -8,6 +8,7 @@
 #include "Engine/Renderer/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Resource/ResourceSubsystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -29,7 +30,7 @@ Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
 
     m_totalHealth = m_health;
     
-    m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
+    m_bodyTexture = g_resourceSubsystem->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -38,12 +39,12 @@ void Aries::Update(const float deltaSeconds)
     if (m_isDead)
         return;
 
-    if (g_theGame->GetPlayerTank()->m_isDead)
+    if (g_game->GetPlayerTank()->m_isDead)
         return;
 
     if (m_health <= 0)
     {
-        g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
+        g_audio->StartSound(g_game->GetEnemyDiedSoundID());
         m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         m_isGarbage = true;
         m_isDead    = true;
@@ -117,7 +118,7 @@ void Aries::UpdateBody(const float deltaSeconds)
 {
     m_timeSinceLastRoll += deltaSeconds;
 
-    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_game->GetPlayerTank();
 
     if (!playerTank)
         return;
@@ -164,6 +165,6 @@ void Aries::RenderBody() const
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.0f, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_bodyTexture);
-    g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+    g_renderer->BindTexture(m_bodyTexture);
+    g_renderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }
